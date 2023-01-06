@@ -63,7 +63,7 @@ REQUIRES = [
     "matplotlib",
     "numpy",
     "pandas",
-    "pytorch",
+    "torch",
     "scikit-learn",
     "scipy",
     "tensorboardx",
