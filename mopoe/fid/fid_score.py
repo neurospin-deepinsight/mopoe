@@ -35,23 +35,20 @@ limitations under the License.
 import os
 import pathlib
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-
 import numpy as np
 import torch
 from scipy import linalg
 from imageio import imread
 from torch.nn.functional import adaptive_avg_pool2d
-
-
+from mopoe.fid.inception import InceptionV3
 print(torch.cuda.is_available())
 
 try:
     from tqdm import tqdm
 except ImportError:
     # If not tqdm is not available, provide a mock version of it
-    def tqdm(x): return x
-
-from fid.inception import InceptionV3
+    def tqdm(x):
+        return x
 
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 parser.add_argument('path', type=str, nargs=2,
@@ -184,8 +181,8 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     if np.iscomplexobj(covmean):
         if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
             m = np.max(np.abs(covmean.imag))
-            covmean = np.nan;
-            print('Imaginary component {}'.format(m));
+            covmean = np.nan
+            print('Imaginary component {}'.format(m))
             # raise ValueError('Imaginary component {}'.format(m))
         else:
             covmean = covmean.real
@@ -235,7 +232,12 @@ def _compute_statistics_of_path(path, model, batch_size, dims, cuda):
     return m, s
 
 
-def calculate_fid_given_paths(paths, batch_size, cuda, dims, filename_state_dict):
+def calculate_fid_given_paths(
+        paths,
+        batch_size,
+        cuda,
+        dims,
+        filename_state_dict):
     """Calculates the FID of two paths"""
     for p in paths:
         if not os.path.exists(p):

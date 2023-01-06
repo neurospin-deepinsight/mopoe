@@ -5,9 +5,11 @@ import pandas as pd
 import torch
 from itertools import chain, combinations
 from sklearn.model_selection import ShuffleSplit
-from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit, MultilabelStratifiedKFold
+from iterstrat.ml_stratifiers import (
+    MultilabelStratifiedShuffleSplit, MultilabelStratifiedKFold)
 
-from mopoe.multimodal_cohort.fetchers import *
+from mopoe.multimodal_cohort.fetchers import (
+    make_hbn_fetchers, make_euaims_fetchers, hbn_defaults, euaims_defaults)
 from mopoe.multimodal_cohort.utils import discretizer
 
 
@@ -24,20 +26,20 @@ class MultimodalDataset(torch.utils.data.Dataset):
         self.metadata = (pd.read_table(metadata_path) if metadata_path
                          else None)
         n_samples = [len(self.idx_per_mod[key]) for key in self.modalities]
-        if not all([n_samples[i] == n_samples[(i+1) % len(n_samples)]
+        if not all([n_samples[i] == n_samples[(i + 1) % len(n_samples)]
                     for i in range(len(n_samples))]):
             raise ValueError("All modalities do not have the same number of"
                              "samples.")
         if self.metadata is not None and n_samples[0] != len(self.metadata):
             raise ValueError("The data and metadata do not have the same"
                              "number of samples.")
-        if transform is not None and type(transform) is dict:
+        if transform is not None and isinstance(transform, dict):
             if not all([k in self.modalities for k in transform.keys()]):
                 raise ValueError("The transform should be either a function,"
                                  "or a dict with modalities as keys and"
                                  "function as values.")
         if (on_the_fly_transform is not None and
-           type(on_the_fly_transform) is dict):
+                isinstance(on_the_fly_transform, dict)):
             if not all([k in self.modalities for k in on_the_fly_transform]):
                 raise ValueError("The transform should be either a function,"
                                  "or a dict with modalities as keys and"
@@ -46,7 +48,7 @@ class MultimodalDataset(torch.utils.data.Dataset):
         self.indices = indices
         self.modality_subsets = list(chain.from_iterable(
             combinations(self.modalities, n) for n in range(
-                1, len(self.modalities)+1)))
+                1, len(self.modalities) + 1)))
         self.idx_per_modality_subset = self.compute_idx_per_modality_subset()
 
         data_path = idx_path.replace("idx", "data").replace(".npz", ".npy")
@@ -59,7 +61,7 @@ class MultimodalDataset(torch.utils.data.Dataset):
                 if overwrite or not os.path.exists(mod_path):
                     orig_mod_path = mod_path.replace("_transformed", "")
                     data = np.load(orig_mod_path, mmap_mode="r")
-                    if type(transform) == dict:
+                    if isinstance(transform, dict):
                         if mod in transform.keys():
                             transformed_data[mod] = transform[mod](data)
                         else:
@@ -98,7 +100,7 @@ class MultimodalDataset(torch.utils.data.Dataset):
                     data = ret[mod]
                     # n_channels = data.shape[-1]
                     data = torch.tensor(data)
-                    if type(transform) == dict and mod in transform.keys():
+                    if isinstance(transform, dict) and mod in transform.keys():
                         ret[mod] = transform[mod](data)
                     else:
                         ret[mod] = transform(data)
@@ -106,7 +108,7 @@ class MultimodalDataset(torch.utils.data.Dataset):
             ret = self.on_the_fly_inter_transform(ret)
         label = 0
         if "asd" in ret["metadata"]:
-            label = ret["metadata"]["asd"]-1
+            label = ret["metadata"]["asd"] - 1
         metadata = ret["metadata"]
         del ret["metadata"]
         return ret, label, metadata
@@ -121,15 +123,16 @@ class MultimodalDataset(torch.utils.data.Dataset):
                     modalities.append(mod)
             for sub_idx, subset in enumerate(self.modality_subsets):
                 if (all([mod in subset for mod in modalities]) and
-                    all([mod in modalities for mod in subset])):
+                        all([mod in modalities for mod in subset])):
                     idx_per_modality_subset[sub_idx].append(idx)
                     break
         return idx_per_modality_subset
 
     def get_modality_proportions(self):
-        return [len(sub_idx) / len(self) for sub_idx in self.idx_per_modality_subset]
+        return [len(sub_idx) / len(self)
+                for sub_idx in self.idx_per_modality_subset]
 
-    
+
 class DataManager(object):
     """ Data manager that builds the datasets
     """
@@ -192,7 +195,7 @@ class DataManager(object):
         metadata_path = self.fetcher.train_metadata_path
 
         if validation is not None:
-            assert (type(validation) is int) and (validation > 0)
+            assert (isinstance(validation, int)) and (validation > 0)
             idx_per_mod = np.load(idx_path, mmap_mode="r")
 
             modalities = list(idx_per_mod)
@@ -202,7 +205,7 @@ class DataManager(object):
                 validation, test_size=val_size, random_state=seed)
             y = None
             if stratify is not None:
-                assert type(stratify) is list
+                assert isinstance(stratify, list)
                 splitter = MultilabelStratifiedShuffleSplit(
                     validation, test_size=val_size, random_state=seed)
                 y = pd.read_table(metadata_path)[stratify].copy()
@@ -245,10 +248,11 @@ class DataManager(object):
             raise ValueError("This dataset does not have test data")
         return self.train_dataset if key == "train" else self.test_dataset
 
-    
+
 class MissingModalitySampler(torch.utils.data.Sampler):
     """
     """
+
     def __init__(self, dataset, batch_size, stratify=None, discretize=None,
                  seed=42):
         super().__init__(dataset)
@@ -258,7 +262,8 @@ class MissingModalitySampler(torch.utils.data.Sampler):
         self.discretize = discretize
         self.seed = seed
 
-        self.idx_per_modality_subset = self.dataset.idx_per_modality_subset.copy()
+        self.idx_per_modality_subset = (
+            self.dataset.idx_per_modality_subset.copy())
 
     def __len__(self):
         size = 0
@@ -277,9 +282,10 @@ class MissingModalitySampler(torch.utils.data.Sampler):
         for idx, _ in enumerate(self.dataset.modality_subsets):
             local_batch_idx = 0
             n_batchs = (len(idx_per_modality_subset[idx]) +
-                         self.batch_size - 1) // self.batch_size
+                        self.batch_size - 1) // self.batch_size
             if self.stratify is not None and n_batchs > 1:
-                metadata = self.dataset.metadata.iloc[idx_per_modality_subset[idx]]
+                metadata = self.dataset.metadata.iloc[
+                    idx_per_modality_subset[idx]]
                 splitter = MultilabelStratifiedKFold(
                     n_batchs, shuffle=True, random_state=self.seed)
                 y = metadata[self.stratify].copy()
@@ -305,7 +311,8 @@ class MissingModalitySampler(torch.utils.data.Sampler):
                         idx_per_modality_subset[idx].remove(i)
                 else:
                     _, new_indices = next(splitted)
-                    new_indices = np.array(idx_per_modality_subset[idx])[new_indices]
+                    new_indices = np.array(
+                        idx_per_modality_subset[idx])[new_indices]
                 indices.append(new_indices)
                 batch_idx += 1
                 local_batch_idx += 1
@@ -313,13 +320,15 @@ class MissingModalitySampler(torch.utils.data.Sampler):
                                           size=len(complete_batch_indices),
                                           replace=False)
         incomplete_order = np.random.choice(incomplete_batch_indices,
-                                          size=len(incomplete_batch_indices),
-                                          replace=False)
+                                            size=len(incomplete_batch_indices),
+                                            replace=False)
         complete_indices = []
         if len(complete_order) > 0:
-            complete_indices = np.array(indices, dtype="object")[complete_order].tolist()
+            complete_indices = np.array(indices, dtype="object")[
+                complete_order].tolist()
         incomplete_indices = []
         if len(incomplete_order) > 0:
-            incomplete_indices = np.array(indices, dtype="object")[incomplete_order].tolist()
+            incomplete_indices = np.array(indices, dtype="object")[
+                incomplete_order].tolist()
         indices = complete_indices + incomplete_indices
         return iter(indices)

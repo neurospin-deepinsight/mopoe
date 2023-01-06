@@ -25,4 +25,4 @@ jobs:
         pip install flake8 nbconvert[test]
     - name: Check Python syntax
       run: |
-        flake8 --ignore E722,W503,W504 *.py
+        flake8 --ignore E722,E741,W503,W504,F401,F841,E731 mopoe

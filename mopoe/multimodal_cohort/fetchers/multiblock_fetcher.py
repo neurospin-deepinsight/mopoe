@@ -30,10 +30,14 @@ def fetch_multiblock_wrapper(datasetdir, defaults):
     """
 
     def fetch_multiblock(
-            blocks=defaults["blocks"], test_size=defaults["test_size"],
-            stratify=defaults["stratify"], discretize=defaults["discretize"],
-            seed=defaults["seed"], allow_missing_blocks=defaults["allow_missing_blocks"],
-            overwrite=False, **kwargs):
+            blocks=defaults["blocks"],
+            test_size=defaults["test_size"],
+            stratify=defaults["stratify"],
+            discretize=defaults["discretize"],
+            seed=defaults["seed"],
+            allow_missing_blocks=defaults["allow_missing_blocks"],
+            overwrite=False,
+            **kwargs):
         """ Fetches and preprocesses multi block data
 
         Parameters
@@ -91,10 +95,12 @@ def fetch_multiblock_wrapper(datasetdir, defaults):
         if not os.path.isfile(path) or overwrite:
             subj_per_block = {}
 
-            subjects_test = None
+            subjects_test, subjects_train = None, None
 
             for block in blocks:
-                new_subj = np.load(block_paths[block]["subjects"], allow_pickle=True)
+                new_subj = np.load(
+                    block_paths[block]["subjects"],
+                    allow_pickle=True)
                 subj_per_block[block] = new_subj
             # Remove subjects that arent in all the channels
             if not allow_missing_blocks:
@@ -116,9 +122,9 @@ def fetch_multiblock_wrapper(datasetdir, defaults):
                         missing_modalities[sub_idx].append(block)
                 index[block] = np.array(new_index)
 
-
             metadata = pd.read_table(block_paths["metadata"])
-            metadata = extract_and_order_by(metadata, subject_column_name, common_subjects)
+            metadata = extract_and_order_by(
+                metadata, subject_column_name, common_subjects)
             index_train_subjects = list(range(len(common_subjects)))
             if test_size is not None and test_size > 0:
                 splitter = ShuffleSplit(1, test_size=test_size,
@@ -127,7 +133,7 @@ def fetch_multiblock_wrapper(datasetdir, defaults):
                 if stratify is not None:
                     splitter = MultilabelStratifiedShuffleSplit(
                         1, test_size=test_size, random_state=seed)
-                    if not type(stratify) is list:
+                    if not isinstance(stratify, list):
                         stratify = [stratify]
                     y = metadata[stratify].copy()
                     for name in stratify:
@@ -158,9 +164,11 @@ def fetch_multiblock_wrapper(datasetdir, defaults):
                     index_test[block] = index[block][index_test_subjects]
 
             # Loading the metadata
-            metadata_train = extract_and_order_by(metadata, subject_column_name, subjects_train)
+            metadata_train = extract_and_order_by(
+                metadata, subject_column_name, subjects_train)
             if test_size is None or test_size > 0:
-                metadata_test = extract_and_order_by(metadata, subject_column_name, subjects_test)
+                metadata_test = extract_and_order_by(
+                    metadata, subject_column_name, subjects_test)
 
             # Saving
             np.savez(path, **index_train)

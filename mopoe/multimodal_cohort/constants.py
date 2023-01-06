@@ -1,3 +1,3 @@
 
-indices = {'clinical': 0, 'rois': 1};
-modalities = ['clinical', 'rois'];
+indices = {'clinical': 0, 'rois': 1}
+modalities = ['clinical', 'rois']

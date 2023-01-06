@@ -13,28 +13,13 @@ Define the different workflows used during the analysis.
 
 # Imports
 import os
-import glob
 import json
-import collections
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
-import statsmodels.api as sm
 from types import SimpleNamespace
 import torch
-from torch.distributions import Normal
-from torch.autograd import Variable
-from torch.utils.data import DataLoader
-from brainite.models import MCVAE
 from mopoe.run_epochs import run_epochs
-from mopoe.multimodal_cohort.flags import parser
 from mopoe.utils.filehandling import create_dir_structure
 from mopoe.multimodal_cohort.experiment import MultimodalExperiment
-from mopoe.multimodal_cohort.dataset import (
-    DataManager, MissingModalitySampler)
-from mopoe.color_utils import (
-    print_title, print_subtitle, print_command, print_text, print_result,
-    print_error)
+from mopoe.color_utils import print_title
 
 
 def train_exp(dataset, datasetdir, outdir, input_dims, latent_dim=20,

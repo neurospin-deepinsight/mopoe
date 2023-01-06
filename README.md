@@ -1,4 +1,4 @@
-![Pep8](https://github.com/neurospin-projects/2022_cambroise_interpret_multivae/actions/workflows/pep8.yml/badge.svg)
+![Pep8](https://github.com/neurospin-deepinsight/mopoe/actions/workflows/pep8.yml/badge.svg)
 
 
 # Mixture-of-Products-of-Experts (MoPoE) VAE 

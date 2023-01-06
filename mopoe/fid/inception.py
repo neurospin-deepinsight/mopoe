@@ -3,14 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 
-try:
-    from torchvision.models.utils import load_state_dict_from_url
-except ImportError:
-    from torch.utils.model_zoo import load_url as load_state_dict_from_url
+# try:
+#     from torchvision.models.utils import load_state_dict_from_url
+# except ImportError:
+#     from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
 # Inception weights ported to Pytorch from
 # http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz
-FID_WEIGHTS_URL = 'https://github.com/mseitzer/pytorch-fid/releases/download/fid_weights/pt_inception-2015-12-05-6726825d.pth'
+FID_WEIGHTS_URL = (
+    'https://github.com/mseitzer/pytorch-fid/releases/download/'
+    'fid_weights/pt_inception-2015-12-05-6726825d.pth')
 
 
 class InceptionV3(nn.Module):
@@ -194,6 +196,7 @@ def fid_inception_v3(PATH_STATE_DICT):
 
 class FIDInceptionA(models.inception.InceptionA):
     """InceptionA block patched for FID computation"""
+
     def __init__(self, in_channels, pool_features):
         super(FIDInceptionA, self).__init__(in_channels, pool_features)
 
@@ -219,6 +222,7 @@ class FIDInceptionA(models.inception.InceptionA):
 
 class FIDInceptionC(models.inception.InceptionC):
     """InceptionC block patched for FID computation"""
+
     def __init__(self, in_channels, channels_7x7):
         super(FIDInceptionC, self).__init__(in_channels, channels_7x7)
 
@@ -247,6 +251,7 @@ class FIDInceptionC(models.inception.InceptionC):
 
 class FIDInceptionE_1(models.inception.InceptionE):
     """First InceptionE block patched for FID computation"""
+
     def __init__(self, in_channels):
         super(FIDInceptionE_1, self).__init__(in_channels)
 
@@ -280,6 +285,7 @@ class FIDInceptionE_1(models.inception.InceptionE):
 
 class FIDInceptionE_2(models.inception.InceptionE):
     """Second InceptionE block patched for FID computation"""
+
     def __init__(self, in_channels):
         super(FIDInceptionE_2, self).__init__(in_channels)
 

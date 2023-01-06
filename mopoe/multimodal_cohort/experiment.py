@@ -1,6 +1,6 @@
 import json
 import random
-import numpy as np 
+import numpy as np
 
 import torch
 from torchvision import transforms
@@ -8,20 +8,16 @@ import torch.optim as optim
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 
-#from utils.BaseExperiment import BaseExperiment
-
+# from mopoe.utils.BaseExperiment import BaseExperiment
 from mopoe.modalities.multimodal_cohort import Clinical, Rois
-
 from mopoe.multimodal_cohort.dataset import MultimodalDataset, DataManager
-
-
 from mopoe.multimodal_cohort.networks.VAE import VAE
 from mopoe.multimodal_cohort.networks.networks import Encoder, Decoder
-
 from mopoe.utils.BaseExperiment import BaseExperiment
 
 
 class MultimodalExperiment(BaseExperiment):
+
     def __init__(self, flags, alphabet):
         super().__init__(flags)
         # self.flags = flags
@@ -66,9 +62,19 @@ class MultimodalExperiment(BaseExperiment):
 
     def set_modalities(self):
         mods = [Clinical, Rois]
-        mods = [mods[m](self.flags.input_dim[m], Encoder(self.flags, m),
-                        Decoder(self.flags, m), self.flags.class_dim,
-                        self.flags.style_dim, self.flags.likelihood) for m in range(self.num_modalities)]
+        mods = [
+            mods[m](
+                self.flags.input_dim[m],
+                Encoder(
+                    self.flags,
+                    m),
+                Decoder(
+                    self.flags,
+                    m),
+                self.flags.class_dim,
+                self.flags.style_dim,
+                self.flags.likelihood) for m in range(
+                self.num_modalities)]
         mods_dict = {m.name: m for m in mods}
         return mods_dict
 
@@ -83,14 +89,18 @@ class MultimodalExperiment(BaseExperiment):
             scaler.fit(all_training_data)
             scalers[mod] = scaler
         self.scalers = scalers
-    
+
     def unsqueeze_0(self, x):
         return x.unsqueeze(0)
 
     def set_dataset(self):
-        manager = DataManager(self.flags.dataset, self.flags.datasetdir, 
-                              list(self.modalities), overwrite=False,
-                              allow_missing_blocks=self.flags.allow_missing_blocks)
+        manager = DataManager(
+            self.flags.dataset,
+            self.flags.datasetdir,
+            list(
+                self.modalities),
+            overwrite=False,
+            allow_missing_blocks=self.flags.allow_missing_blocks)
         self.set_scalers(manager.train_dataset)
         self.transform = {mod: transforms.Compose([
             self.unsqueeze_0,
@@ -112,12 +122,12 @@ class MultimodalExperiment(BaseExperiment):
     def set_optimizer(self):
         # optimizer definition
         total_params = sum(p.numel() for p in self.mm_vae.parameters())
-        params = list(self.mm_vae.parameters());
+        params = list(self.mm_vae.parameters())
         print('num parameters: ' + str(total_params))
         optimizer = optim.Adam(params,
                                lr=self.flags.initial_learning_rate,
                                betas=(self.flags.beta_1,
-                               self.flags.beta_2))
+                                      self.flags.beta_2))
         self.optimizer = optimizer
 
     def set_rec_weights(self):
@@ -139,11 +149,13 @@ class MultimodalExperiment(BaseExperiment):
         n_test = len(self.dataset_test)
         samples = []
         for i in range(num_images):
-            ix = random.randint(0, n_test-1)
+            ix = random.randint(0, n_test - 1)
             sample, _, _ = self.dataset_test[ix]
             for key in sample.keys():
                 if sample[key] is not None:
-                    sample[key] = torch.tensor(sample[key]).to(self.flags.device)
+                    sample[key] = torch.tensor(
+                        sample[key]).to(
+                        self.flags.device)
             samples.append(sample)
         return samples
 

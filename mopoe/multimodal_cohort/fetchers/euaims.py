@@ -25,6 +25,7 @@ DEFAULTS = {
     }
 }
 
+
 def make_all_fetchers(datasetdir):
     """ Compiles all the fetchers into a dictionnary.
     The difference with "make_fetchers" is that it

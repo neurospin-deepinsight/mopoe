@@ -48,4 +48,3 @@ def make_all_fetchers(datasetdir):
     fetchers["multiblock"] = fetch_multiblock_wrapper(
         datasetdir=datasetdir, defaults=DEFAULTS["multiblock"])
     return fetchers
-

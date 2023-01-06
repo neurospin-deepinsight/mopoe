@@ -17,11 +17,11 @@ from utils.TBLogger import TBLogger
 from multimodal_cohort.dataset import MissingModalitySampler
 
 # global variables
-SEED = None 
+SEED = None
 if SEED is not None:
     np.random.seed(SEED)
     torch.manual_seed(SEED)
-    random.seed(SEED) 
+    random.seed(SEED)
 
 
 def calc_log_probs(exp, result, batch):
@@ -32,9 +32,10 @@ def calc_log_probs(exp, result, batch):
         mod = mods[m_key]
         if mod.name in batch[0].keys():
             log_probs[mod.name] = -mod.calc_log_prob(result["rec"][mod.name],
-                                                    batch[0][mod.name],
-                                                    len(batch[0][mod.name]))
-            weighted_log_prob += exp.rec_weights[mod.name]*log_probs[mod.name]
+                                                     batch[0][mod.name],
+                                                     len(batch[0][mod.name]))
+            weighted_log_prob += exp.rec_weights[
+                mod.name] * log_probs[mod.name]
     return log_probs, weighted_log_prob
 
 
@@ -64,9 +65,8 @@ def calc_style_kld(exp, klds):
     style_weights = exp.style_weights
     weighted_klds = 0.0
     for m, m_key in enumerate(mods.keys()):
-        weighted_klds += style_weights[m_key]*klds[m_key + "_style"]
+        weighted_klds += style_weights[m_key] * klds[m_key + "_style"]
     return weighted_klds
-
 
 
 def basic_routine_epoch(exp, batch):
@@ -91,7 +91,7 @@ def basic_routine_epoch(exp, batch):
         klds_style = calc_klds_style(exp, results)
 
     if (exp.flags.modality_jsd or exp.flags.modality_moe
-        or exp.flags.joint_elbo):
+            or exp.flags.joint_elbo):
         if exp.flags.factorized_representation:
             kld_style = calc_style_kld(exp, klds_style)
         else:
@@ -138,8 +138,13 @@ def train(epoch, exp, tb_logger):
     mm_vae.train()
     exp.mm_vae = mm_vae
 
-    sampler = MissingModalitySampler(exp.dataset_train, batch_size=exp.flags.batch_size)
-    d_loader = DataLoader(exp.dataset_train, batch_sampler=sampler, num_workers=8)
+    sampler = MissingModalitySampler(
+        exp.dataset_train,
+        batch_size=exp.flags.batch_size)
+    d_loader = DataLoader(
+        exp.dataset_train,
+        batch_sampler=sampler,
+        num_workers=8)
 
     for iteration, batch in enumerate(d_loader):
         basic_routine = basic_routine_epoch(exp, batch)
@@ -160,8 +165,12 @@ def test(epoch, exp, tb_logger):
         mm_vae.eval()
         exp.mm_vae = mm_vae
 
-        sampler = MissingModalitySampler(exp.dataset_test, batch_size=exp.flags.batch_size)
-        d_loader = DataLoader(exp.dataset_test, batch_sampler=sampler, num_workers=8)
+        sampler = MissingModalitySampler(
+            exp.dataset_test, batch_size=exp.flags.batch_size)
+        d_loader = DataLoader(
+            exp.dataset_test,
+            batch_sampler=sampler,
+            num_workers=8)
 
         for _, batch in enumerate(d_loader):
             basic_routine = basic_routine_epoch(exp, batch)
@@ -171,13 +180,16 @@ def test(epoch, exp, tb_logger):
             log_probs = basic_routine["log_probs"]
             tb_logger.write_testing_logs(results, total_loss, log_probs, klds)
 
-        if (epoch + 1) % exp.flags.eval_freq == 0 or (epoch + 1) == exp.flags.end_epoch:
+        if ((epoch + 1) % exp.flags.eval_freq == 0 or
+                (epoch + 1) == exp.flags.end_epoch):
 
             if exp.flags.calc_nll:
                 lhoods = estimate_likelihoods(exp)
                 tb_logger.write_lhood_logs(lhoods)
 
-            if exp.flags.calc_prd and ((epoch + 1) % exp.flags.eval_freq_fid == 0):
+            if exp.flags.calc_prd and (
+                    (epoch + 1) %
+                    exp.flags.eval_freq_fid == 0):
                 prd_scores = calc_prd_score(exp)
                 tb_logger.write_prd_scores(prd_scores)
 
@@ -197,7 +209,8 @@ def run_epochs(exp):
         test(epoch, exp, tb_logger)
         # save checkpoints after every 5 epochs
         if (epoch + 1) % 5 == 0 or (epoch + 1) == exp.flags.end_epoch:
-            dir_network_epoch = os.path.join(exp.flags.dir_checkpoints, str(epoch).zfill(4))
+            dir_network_epoch = os.path.join(
+                exp.flags.dir_checkpoints, str(epoch).zfill(4))
             if not os.path.exists(dir_network_epoch):
                 os.makedirs(dir_network_epoch)
             exp.mm_vae.save_networks()

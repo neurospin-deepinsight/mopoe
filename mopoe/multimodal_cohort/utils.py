@@ -8,7 +8,7 @@ def extract_and_order_by(df, column_name, values):
     df = df[df[column_name].isin(values)]
     new_index = pd.Series(pd.Categorical(
         df[column_name], categories=values, ordered=True)
-        ).sort_values().index
+    ).sort_values().index
     df = df.reset_index(drop=True).loc[new_index]
 
     return df
