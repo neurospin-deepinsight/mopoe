@@ -3,7 +3,7 @@ import torch
 from torchvision.utils import save_image
 from torchvision.utils import make_grid
 from torchvision import transforms
-from utils import text as text
+from mopoe.utils import text as text
 
 from PIL import ImageDraw
 from PIL import ImageFont

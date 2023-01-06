@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from utils.save_samples import save_generated_samples_singlegroup
+from mopoe.utils.save_samples import save_generated_samples_singlegroup
 
 
 def classify_cond_gen_samples(exp, labels, cond_samples):

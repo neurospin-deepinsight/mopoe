@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-
 import os
 
 import torch
@@ -9,7 +8,6 @@ from torch.autograd import Variable
 from mopoe.divergence_measures.mm_div import calc_alphaJSD_modalities
 from mopoe.divergence_measures.mm_div import calc_group_divergence_moe
 from mopoe.divergence_measures.mm_div import poe
-
 from mopoe.utils import utils
 
 

@@ -3,8 +3,9 @@ import numpy as np
 import math
 import torch
 
-from utils import utils
-from divergence_measures.mm_div import alpha_poe
+from mopoe.utils import utils
+from mopoe.divergence_measures.mm_div import alpha_poe
+
 
 LOG2PI = float(np.log(2.0 * math.pi))
 

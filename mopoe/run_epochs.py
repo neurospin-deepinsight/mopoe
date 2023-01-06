@@ -6,15 +6,13 @@ from torch.autograd import Variable
 from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader
 
-from divergence_measures.kl_div import calc_kl_divergence
+from mopoe.divergence_measures.kl_div import calc_kl_divergence
+from mopoe.eval_metrics.sample_quality import calc_prd_score
+from mopoe.eval_metrics.likelihood import estimate_likelihoods
+from mopoe.utils import utils
+from mopoe.utils.TBLogger import TBLogger
+from mopoe.multimodal_cohort.dataset import MissingModalitySampler
 
-from eval_metrics.sample_quality import calc_prd_score
-from eval_metrics.likelihood import estimate_likelihoods
-
-from utils import utils
-from utils.TBLogger import TBLogger
-
-from multimodal_cohort.dataset import MissingModalitySampler
 
 # global variables
 SEED = None

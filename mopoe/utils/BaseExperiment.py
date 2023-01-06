@@ -1,6 +1,5 @@
 import os
 from abc import ABC, abstractmethod
-
 from itertools import chain, combinations
 
 

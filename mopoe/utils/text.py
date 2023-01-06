@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+
 # digit_text = ['null', 'eins', 'zwei', 'drei', 'vier', 'fuenf', 'sechs',
 #   'sieben', 'acht', 'neun'];
 digit_text_german = [

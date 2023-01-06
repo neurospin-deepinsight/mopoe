@@ -8,17 +8,17 @@ import torch
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from utils import utils
-from utils.likelihood import log_mean_exp
-from utils.likelihood import gaussian_log_pdf
-from utils.likelihood import unit_gaussian_log_pdf
-from utils.likelihood import get_latent_samples
-from utils.likelihood import get_dyn_prior
-from utils.likelihood import log_marginal_estimate
-from utils.likelihood import log_joint_estimate
+from mopoe.utils import utils
+from mopoe.utils.likelihood import log_mean_exp
+from mopoe.utils.likelihood import gaussian_log_pdf
+from mopoe.utils.likelihood import unit_gaussian_log_pdf
+from mopoe.utils.likelihood import get_latent_samples
+from mopoe.utils.likelihood import get_dyn_prior
+from mopoe.utils.likelihood import log_marginal_estimate
+from mopoe.utils.likelihood import log_joint_estimate
+from mopoe.divergence_measures.mm_div import alpha_poe
+from mopoe.divergence_measures.mm_div import poe
 
-from divergence_measures.mm_div import alpha_poe
-from divergence_measures.mm_div import poe
 
 LOG2PI = float(np.log(2.0 * math.pi))
 
