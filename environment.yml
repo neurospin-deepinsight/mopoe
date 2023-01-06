@@ -1,0 +1,19 @@
+name: mopoe
+channels:
+  - pytorch
+  - anaconda
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - matplotlib=3.0.0
+  - numpy=1.15.2
+  - pandas=0.23.4
+  - python=3.5.6
+  - pytorch=1.4.0
+  - scikit-learn=0.20.0
+  - scipy=1.1.0
+  - tensorboardx=1.8
+  - torchvision=0.5.0
+  - fire
+  - iterative-stratification
