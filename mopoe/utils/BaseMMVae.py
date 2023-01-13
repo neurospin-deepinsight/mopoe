@@ -153,16 +153,14 @@ class BaseMMVae(ABC, nn.Module):
         for m, m_key in enumerate(self.modalities.keys()):
             if m_key in input_batch.keys():
                 m_s_mu, m_s_logvar = enc_mods[m_key + '_style']
-                if self.flags.factorized_representation and sample_latents:
+                if (self.flags.factorized_representation and sample_latents and
+                        self.flags.style_dim[m] > 0):
                     m_s_embeddings = self.reparameterize(
                         mu=m_s_mu, logvar=m_s_logvar)
                 else:
                     m_s_embeddings = m_s_mu
-                m_rec = self.lhoods[m_key](
-                    *
-                    self.decoders[m_key](
-                        m_s_embeddings,
-                        class_embeddings))
+                m_rec = self.lhoods[m_key](*self.decoders[m_key](
+                    m_s_embeddings, class_embeddings))
                 results_rec[m_key] = m_rec
         results['rec'] = results_rec
         return results
@@ -302,7 +300,8 @@ class BaseMMVae(ABC, nn.Module):
     def get_random_styles(self, num_samples):
         styles = dict()
         for k, m_key in enumerate(self.modalities.keys()):
-            if self.flags.factorized_representation:
+            if (self.flags.factorized_representation and
+                    self.flags.style_dim[k] > 0):
                 mod = self.modalities[m_key]
                 z_style = torch.randn(num_samples, mod.style_dim)
                 z_style = z_style.to(self.flags.device)

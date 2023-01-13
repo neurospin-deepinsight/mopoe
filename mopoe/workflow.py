@@ -16,6 +16,7 @@ import os
 import json
 from types import SimpleNamespace
 import torch
+import mopoe
 from mopoe.run_epochs import run_epochs
 from mopoe.utils.filehandling import create_dir_structure
 from mopoe.multimodal_cohort.experiment import MultimodalExperiment
@@ -27,7 +28,7 @@ def train_exp(dataset, datasetdir, outdir, input_dims, latent_dim=20,
               likelihood="normal", initial_learning_rate=0.002, batch_size=256,
               n_epochs=2500, eval_freq=25, eval_freq_fid=100,
               data_multiplications=1, dropout_rate=0., initial_out_logvar=-3.,
-              learn_output_scale=False):
+              learn_output_scale=False, style_dim=0):
     """ Train the model.
 
     Parameters
@@ -43,7 +44,7 @@ def train_exp(dataset, datasetdir, outdir, input_dims, latent_dim=20,
     latent_dim: int, default 20
         dimension of common factor latent space.
     num_hidden_layers: int, default 1
-        number of hidden laters in the model.
+        number of hidden layers in the model.
     allow_missing_blocks: bool, default False
         optionally, allows for missing modalities.
     beta: float, default 5
@@ -70,8 +71,19 @@ def train_exp(dataset, datasetdir, outdir, input_dims, latent_dim=20,
         initial output logvar.
     learn_output_scale: bool, default False
         optionally, allows for different scales per feature.
+    style_dim: list of int, default None.
+        specific latent representation number of latent dimensions. By default
+        no specific latetent prepresentations is set.
     """
     print_title(f"TRAIN: {dataset}")
+    if (style_dim is None or
+            (len(set(style_dim)) == 1 and style_dim[0] == 0)):
+        style_dim = [0] * len(input_dims)
+        factorized_representation = False
+    else:
+        factorized_representation = True
+    assert len(input_dims) == len(style_dim), (
+        "Number of modalities mismatched in input parameters!")
     flags = SimpleNamespace(
         dataset=dataset, datasetdir=datasetdir, dropout_rate=dropout_rate,
         allow_missing_blocks=allow_missing_blocks, batch_size=batch_size,
@@ -81,19 +93,20 @@ def train_exp(dataset, datasetdir, outdir, input_dims, latent_dim=20,
         dim=64, dir_data="../data", dir_experiment=outdir, dir_fid=None,
         div_weight=None, div_weight_uniform_content=None,
         end_epoch=n_epochs, eval_freq=eval_freq, eval_freq_fid=eval_freq_fid,
-        factorized_representation=False, img_size_m1=28, img_size_m2=32,
+        factorized_representation=factorized_representation, img_size_m1=28,
+        img_size_m2=32,
         inception_state_dict="../inception_state_dict.pth",
         initial_learning_rate=initial_learning_rate,
         initial_out_logvar=initial_out_logvar, input_dim=input_dims,
         joint_elbo=False, kl_annealing=0, include_prior_expert=False,
         learn_output_scale=learn_output_scale, len_sequence=8,
-        likelihood=likelihood, load_saved=False, method='joint_elbo',
+        likelihood=likelihood, load_saved=False, method="joint_elbo",
         mm_vae_save="mm_vae", modality_jsd=False, modality_moe=False,
         modality_poe=False, num_channels_m1=1, num_channels_m2=3,
         num_classes=2, num_hidden_layers=num_hidden_layers,
         num_samples_fid=10000, num_training_samples_lr=500,
-        poe_unimodal_elbos=True, save_figure=False, start_epoch=0, style_dim=0,
-        subsampled_reconstruction=True)
+        poe_unimodal_elbos=True, save_figure=False, start_epoch=0,
+        style_dim=style_dim, subsampled_reconstruction=True)
     print(flags)
     use_cuda = torch.cuda.is_available()
     flags.device = torch.device("cuda" if use_cuda else "cpu")
@@ -120,7 +133,8 @@ def train_exp(dataset, datasetdir, outdir, input_dims, latent_dim=20,
         flags.div_weight for _ in range(flags.num_mods)])
     create_dir_structure(flags)
 
-    alphabet_path = os.path.join(os.getcwd(), "alphabet.json")
+    alphabet_path = os.path.join(
+        os.path.dirname(mopoe.__file__), "alphabet.json")
     with open(alphabet_path) as alphabet_file:
         alphabet = str("".join(json.load(alphabet_file)))
     mst = MultimodalExperiment(flags, alphabet)
