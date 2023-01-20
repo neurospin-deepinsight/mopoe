@@ -48,10 +48,12 @@ class MultimodalExperiment(BaseExperiment):
     @classmethod
     def get_experiment(cls, flags_file, alphabet_file, checkpoint_file):
         flags = torch.load(flags_file)
+        flags.device = "cuda" if torch.cuda.is_available() else "cpu"
         with open(alphabet_file, "rt") as of:
             alphabet = str("".join(json.load(of)))
         experiment = MultimodalExperiment(flags, alphabet)
-        checkpoint = torch.load(checkpoint_file)
+        checkpoint = torch.load(checkpoint_file,
+                                map_location=torch.device(flags.device))
         experiment.mm_vae.load_state_dict(checkpoint)
         return experiment, flags
 
