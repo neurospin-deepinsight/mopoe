@@ -42,13 +42,15 @@ class MultimodalExperiment(BaseExperiment):
         self.style_weights = self.set_style_weights()
         self.test_samples = self.get_test_samples()
         self.eval_metric = accuracy_score
-        self.paths_fid = self.set_paths_fid()
+        if flags.dir_gen_eval_fid is not None:
+            self.paths_fid = self.set_paths_fid()
         self.labels = ['ASD']
 
     @classmethod
     def get_experiment(cls, flags_file, alphabet_file, checkpoint_file):
         flags = torch.load(flags_file)
         flags.device = "cuda" if torch.cuda.is_available() else "cpu"
+        flags.dir_gen_eval_fid = None
         with open(alphabet_file, "rt") as of:
             alphabet = str("".join(json.load(of)))
         experiment = MultimodalExperiment(flags, alphabet)
